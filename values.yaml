@@ -1,4 +1,4 @@
 image: aerospike/aerospike-server
 replicaCount: 1
-storage: 1Gi
-storageClassName: local-path
+storageClassName: gp2
+storage: 8Gi
