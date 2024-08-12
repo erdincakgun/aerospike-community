@@ -15,6 +15,20 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      initContainers:
+      - name: {{ .Release.Name }}-init
+        image: busybox
+        command:
+        - sh
+        - -c
+        - >
+          cp /config/aerospike.conf /etc/aerospike/aerospike.conf;
+          echo "Configuration file copied to /etc/aerospike/aerospike.conf";
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: config
+          mountPath: /etc/aerospike
       containers:
       - name: {{ .Release.Name }}
         image: {{ .Values.image }}:{{ .Chart.AppVersion }}
@@ -26,6 +40,12 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /opt/aerospike/data
+        - name: config
+          mountPath: /etc/aerospike
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Release.Name }}-config
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -35,4 +55,13 @@ spec:
       resources:
         requests:
           storage: {{ .Values.storage }}
+      storageClassName: {{ .Values.storageClassName }}
+  - metadata:
+      name: config
+    spec:
+      accessModes: 
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
       storageClassName: {{ .Values.storageClassName }}
